@@ -1,0 +1,13 @@
+﻿@using MudBlazor
+@inherits LayoutComponentBase
+
+<MudThemeProvider @rendermode="InteractiveServer" />
+<MudPopoverProvider @rendermode="InteractiveServer" />
+
+<header>
+    <NavBar></NavBar>
+</header>
+
+<div class="container-xxl">
+    @Body
+</div>

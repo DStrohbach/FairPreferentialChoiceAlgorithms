@@ -1,0 +1,196 @@
+﻿@page "/assignments"
+@rendermode InteractiveServer
+@using BlazorBootstrap
+
+<PageTitle>Alle Zuteilungen im Vergleich</PageTitle>
+
+<style>
+    .card-header{
+        font-size: 14px;
+    }
+    .card-body {
+        font-size: 12px; padding: .25rem .25rem;
+    }
+</style>
+
+<div class="mt-3 mb-2">
+    <h4>Alle Zuteilungen im Vergleich</h4>
+    <p></p>
+</div>
+
+@if (OrderedDatasets is null)
+{
+    <p><em>Keine Datensätze geladen.</em></p>
+}
+else
+{
+<Grid TItem="AssignmentDataset"
+      Class="table table-sm table-bordered table-striped font-monospace"
+      Data="OrderedDatasets"
+      EmptyText="Keine Daten gefunden"
+      HeaderRowCssClass="bg-primary text-white border-bottom-0"
+      FiltersRowCssClass="bg-primary text-white bg-opacity-25 border-bottom-0"
+      FiltersTranslationProvider="GridFiltersTranslationProvider"
+      ItemsPerPageText="Datensets pro Seite"
+      PaginationItemsTextFormat="{0} - {1} von {2} Datensets"
+      Responsive="true"
+      AllowSorting="true"
+      AllowFiltering="true"
+      AllowDetailView="true"
+          AllowPaging="true"
+          PageSize="20"
+          PageSizeSelectorVisible="true"
+          PageSizeSelectorItems="@(new int[] { 20,50,100,250,500})">
+
+    <GridColumns>
+        <GridColumn TItem="AssignmentDataset" HeaderText="HEUR" FilterButtonCSSClass="btn btn-sm h-25" PropertyName="HeuristicName" SortKeySelector="@(item => item.HeuristicName)">
+            @context.HeuristicName
+        </GridColumn>
+        <GridColumn TItem="AssignmentDataset" HeaderText="ALGO" PropertyName="AlgorithmName" SortKeySelector="@(item => item.AlgorithmName)">
+            @context.AlgorithmName
+        </GridColumn>
+            <GridColumn TItem="AssignmentDataset" HeaderText="TYPE" PropertyName="InputDatasetType" SortKeySelector="@(item => item.InputDatasetType)" FilterOperator="BlazorBootstrap.FilterOperator.DoesNotContain" FilterValue="RAND">
+            @context.InputDatasetType
+        </GridColumn>
+            <GridColumn TItem="AssignmentDataset" HeaderText="DATA" PropertyName="InputDatasetName" SortKeySelector="@(item => item.InputDatasetName)" TextNoWrap="true">
+            @context.InputDatasetName
+        </GridColumn>
+            <GridColumn TItem="AssignmentDataset" Class="text-center text-nowrap" HeaderText="NZ" PropertyName="UnassignedStudentsCount" SortKeySelector="@(item => item.UnassignedStudentsCount)" Filterable="false" TextNoWrap="true">
+            @context.UnassignedStudentsCount
+        </GridColumn>
+
+        @for (int i = 0; i < 5; i++)
+        {
+            int courseIndex = i;
+            string coursename = $"Kurs-{courseIndex}";
+                <GridColumn TItem="AssignmentDataset" HeaderTextAlignment="Alignment.Center" HeaderText=@coursename Sortable="false" Filterable="false" TextNoWrap="true">
+                <GridTemplates>
+                    @{
+                        <CourseStatsText Stats="@context.GetCourseStatByCourseId(courseIndex)"></CourseStatsText>
+                    }
+                </GridTemplates>
+            </GridColumn>
+        }
+
+            <GridColumn TItem="AssignmentDataset" Class="text-center text-nowrap" HeaderText="RK" PropertyName="UnassignedStudentsCount" SortKeySelector="@(item => item.DeletedCoursesCount)" Filterable="false" TextNoWrap="true">
+            @context.DeletedCoursesCount
+        </GridColumn>
+    </GridColumns>
+
+        <GridDetailView TItem="AssignmentDataset" Context="dataset" Class="w-100 overflow-x-scroll">
+        <div class="w-100 overflow-x-scroll text-nowrap">
+            <!-- Unzugewiesene Schüler -->
+            <div class="mx-2 d-inline-block">
+                <div class="card">
+                    <div class="card-header bg-danger-subtle">Ohne Zuteilung</div>
+                    <div class="card-body">
+                    @{
+                        var students = dataset.GetStudentsByCourseId(null);
+                        if (students.Any())
+                        {
+                            <ol>
+                                @foreach (var student in students)
+                                {
+                                <li class="small">S_@student.Id: [@string.Join(", ", student.Preferences)]</li>
+                                }
+                            </ol>
+                        }
+                        else
+                        {
+                            <p class="text-center text-mute fst-italic">leer</p>
+                        }
+                    }
+                    </div>
+                </div>
+            </div>
+            <!-- Zugewiesene Schüler -->
+            @foreach (var course in dataset.Courses)
+            {
+            <div class="mx-2 d-inline-block">
+                    <div class="card">
+                        <div class="card-header text-center">Kurs-@course.Id</div>
+                        <div class="card-header text-center"><CourseStatsText Stats="@dataset.GetCourseStatByCourseId(course.Id)"></CourseStatsText></div>
+                        <div class="card-body">
+                        @{
+                            students = dataset.GetStudentsByCourseId(course.Id);
+                            if (students.Any())
+                            {
+                                <ol>
+                                    @foreach (var student in students)
+                                    {
+                                        <li class="fs-tiny"><span class="fw-bold">@($"S-{student.Id:D2}")</span> : [@string.Join(", ", student.Preferences)]</li>
+                                    }
+                                </ol>
+                            }
+                            else
+                            {
+                                <p class="text-center text-mute fst-italic">leer</p>
+                            }
+                        }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </GridDetailView>
+</Grid>
+}
+
+<div class="my-3 p-2 bg-light">
+    <h6 class="fw-bold">Legende</h6>
+    <table class="table table-sm table-borderless table-light">
+        <thead class="fw-bold">
+            <tr>
+                <td>Kürzel</td>
+                <td>Bedeutung</td>
+                <td>Deutung</td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td class="text-nowrap">HEUR</td><td>Bezeichnung der Heuristik</td><td>STD = Keine Heuristik, OMX = Optimized Minimum X</td></tr>
+            <tr><td class="text-nowrap">ALGO</td><td>Bezeichnung des Algorithmus</td><td>BOS = Boston, RSD = Random Serial Dictatorship, UNK = Unknown</td></tr>
+            <tr><td class="text-nowrap">TYPE</td><td>Eingabedatensatztyp</td><td>HIST = Historisch, BEST = BestCase, WRST = WorstCase, RAND = Random</td></tr>
+            <tr><td class="text-nowrap">DATA</td><td>Bezeichnung der Eingabedaten</td><td>Kürzel für einen bestimmten Eingabedatensatz</td></tr>
+            <tr><td class="text-nowrap">NZ</td><td>Anzahl nicht zugeteilter Schüler</td><td>0 = Alle Schüler wurden einem Kurs zugeteilt</td></tr>
+            <tr><td class="text-nowrap">Kurs-X</td><td>Kursstatistiken</td><td>Anzahl Teilnehmer / Maximale Teilnehmer und gewünschstes Minimum ODER nicht vorhanden</td></tr>
+            <tr><td class="text-nowrap">RK</td><td>Anzahl reduzierter Kurse</td><td>0 = Kein Kurs wurde aus dem Angebot gekürzt</td></tr>
+        </tbody>
+    </table>
+</div>
+
+@code {
+
+    public List<AssignmentDataset> OrderedDatasets = new List<AssignmentDataset>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Daten laden und sortieren:
+        OrderedDatasets = AssignmentService.Assignments
+        .OrderBy(d => d.HeuristicName)
+        .ThenBy(d => d.AlgorithmName)
+        .ToList();
+    }
+
+    private async Task<IEnumerable<FilterOperatorInfo>> GridFiltersTranslationProvider()
+    {
+        var filtersTranslation = new List<FilterOperatorInfo>();
+
+        // number/date/boolean
+        filtersTranslation.Add(new("=", "gleich", BlazorBootstrap.FilterOperator.Equals));
+        filtersTranslation.Add(new("!=", "ungleich", BlazorBootstrap.FilterOperator.NotEquals));
+        // number/date
+        filtersTranslation.Add(new("<", "kleiner als", BlazorBootstrap.FilterOperator.LessThan));
+        filtersTranslation.Add(new("<=", "kleiner gleich als", BlazorBootstrap.FilterOperator.LessThanOrEquals));
+        filtersTranslation.Add(new(">", "größer als", BlazorBootstrap.FilterOperator.GreaterThan));
+        filtersTranslation.Add(new(">=", "größer gleich als", BlazorBootstrap.FilterOperator.GreaterThanOrEquals));
+        // string
+        filtersTranslation.Add(new("*a*", "beinhaltet", BlazorBootstrap.FilterOperator.Contains));
+        filtersTranslation.Add(new("!*a*", "beinhaltet nicht", BlazorBootstrap.FilterOperator.DoesNotContain));
+        filtersTranslation.Add(new("a*", "beginnt mit", BlazorBootstrap.FilterOperator.StartsWith));
+        filtersTranslation.Add(new("*a", "endet mit", BlazorBootstrap.FilterOperator.EndsWith));
+        // common
+        filtersTranslation.Add(new("", "Filter zurücksetzen", BlazorBootstrap.FilterOperator.Clear));
+
+        return await Task.FromResult(filtersTranslation);
+    }
+}

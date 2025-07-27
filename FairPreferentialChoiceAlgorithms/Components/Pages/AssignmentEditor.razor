@@ -1,0 +1,219 @@
+﻿@rendermode InteractiveServer
+@using BlazorBootstrap
+
+<style>
+    .list-group-item {
+        padding: 2px 2px 2px 2px;
+    }
+</style>
+
+<div class="my-4">
+    <div class="d-flex justify-content-between">
+        <h5 class="fw-bold">Zuteilungseditor</h5>
+        <button class="btn btn-sm btn-dark" disabled="@(Assignment is null)" @onclick="SaveChanges"><i class="bi bi-arrow-clockwise"></i> Metriken aktualisieren</button>
+    </div>
+    <div class="ps-2" style="border-left: solid 3px #325D88">
+        @if (Assignment is not null)
+        {
+            <div class="row my-3">
+                <!-- Unassigned Students -->
+                <div class="col">
+                    <h5>Ohne Zuteilung</h5>
+                    <SortableList TItem="Student"
+                                  Group="StudentAssignment"
+                                  Name="unassigned"
+                                  Data="@UnassignedStudents"
+                                  Context="student"
+                                  OnUpdate="args => OnStudentListUpdate(UnassignedStudents, args)"
+                                  OnRemove="OnStudentListRemove"
+                                  EmptyText="Keine Schüler">
+                        <ItemTemplate>
+                            <div class="d-flex flex-md-nowrap justify-content-between" style="font-size: 12px">
+                                <span class="text-nowrap">@student.Name</span>
+                                <span class="text-nowrap">@($"[{string.Join(", ", student.Preferences).ToString()}]")</span>
+                            </div>
+                        </ItemTemplate>
+                    </SortableList>
+                </div>
+
+                <!-- Dynamisch pro Kurs -->
+                @foreach (var course in Courses)
+                {
+                    <div class="col">
+                        <h5>@($"Kurs-{course.Id}")</h5>
+                        <SortableList TItem="Student"
+                                      Group="StudentAssignment"
+                                      Name="@($"course-{course.Id}")"
+                                      Data="@course.Participants"
+                                      Context="student"
+                                      OnUpdate="args => OnStudentListUpdate(course.Participants, args)"
+                                      OnRemove="OnStudentListRemove"
+                                      EmptyText="Keine Schüler">
+                            <ItemTemplate>
+                                <div class="d-flex flex-md-nowrap justify-content-between" style="font-size: 12px">
+                                    <span class="text-nowrap">@student.Name</span>
+                                    <span class="text-nowrap">@($"[{string.Join(", ", student.Preferences).ToString()}]")</span>
+                                </div>
+                            </ItemTemplate>
+                        </SortableList>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p>Es wurden keine Zuteilungsdaten erstellt.<br /><small>Bitte wählen Sie die Eingabeparameter und drücken Sie <span class="fw-bold text-primary">Zuteilung starten</span></small></p>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public AssignmentDataset? Assignment { get; set; }
+
+    [Parameter]
+    public EventCallback<AssignmentDataset> OnAssignmentDatasetSaved { get; set; }
+
+    private List<Course> Courses = new();
+    private List<Student> UnassignedStudents = new();
+
+    protected override void OnParametersSet()
+    {
+        if (Assignment is not null)
+        {
+            Courses.Clear();
+            UnassignedStudents.Clear();
+
+            // Kurse initialisieren
+            Courses = Assignment.Courses
+                .Select(c => new Course(c.Id, c.Capacity, c.Minimum))
+                .ToList();
+
+            var courseMap = Courses.ToDictionary(c => c.Id);
+
+            // Schüler zuweisen
+            foreach (var studentTuple in Assignment.Students)
+            {
+                var student = new Student(studentTuple.Id, studentTuple.Preferences);
+
+                if (studentTuple.AssignedCourse.HasValue && courseMap.TryGetValue(studentTuple.AssignedCourse.Value, out var assignedCourse))
+                {
+                    assignedCourse.Participants.Add(student);
+                }
+                else
+                {
+                    UnassignedStudents.Add(student);
+                }
+            }
+        }
+    }
+
+    private void OnStudentListUpdate(List<Student> targetList, SortableListEventArgs args)
+    {
+        if (args.OldIndex < 0 || args.OldIndex >= targetList.Count)
+        {
+            return;
+        }
+
+
+        var student = targetList[args.OldIndex];
+        targetList.RemoveAt(args.OldIndex);
+
+        if (args.NewIndex < 0 || args.NewIndex > targetList.Count)
+        {
+            targetList.Add(student);
+        }
+        else
+        {
+            targetList.Insert(args.NewIndex, student);
+        }
+    }
+
+    private void OnStudentListRemove(SortableListEventArgs args)
+    {
+        Student student;
+
+        // Herkunftsliste
+        if (args.FromListName == "unassigned")
+        {
+            if (args.OldIndex < 0 || args.OldIndex >= UnassignedStudents.Count)
+            {
+                return;
+            }
+
+            student = UnassignedStudents[args.OldIndex];
+            UnassignedStudents.RemoveAt(args.OldIndex);
+        }
+        else
+        {
+            var fromCourse = Courses.FirstOrDefault(c => $"course-{c.Id}" == args.FromListName);
+            if (fromCourse == null || args.OldIndex < 0 || args.OldIndex >= fromCourse.Participants.Count)
+            {
+                return;
+            }
+
+            student = fromCourse.Participants[args.OldIndex];
+            fromCourse.Participants.RemoveAt(args.OldIndex);
+        }
+
+        // Zielliste
+        if (args.ToListName == "unassigned")
+        {
+            if (args.NewIndex < 0 || args.NewIndex > UnassignedStudents.Count)
+            {
+                UnassignedStudents.Add(student);
+            }
+            else
+            {
+                UnassignedStudents.Insert(args.NewIndex, student);
+            }
+        }
+        else
+        {
+            var toCourse = Courses.FirstOrDefault(c => $"course-{c.Id}" == args.ToListName);
+            if (toCourse == null)
+            {
+                return;
+            }
+            if (args.NewIndex < 0 || args.NewIndex > toCourse.Participants.Count)
+            {
+                toCourse.Participants.Add(student);
+            }
+            else
+            {
+                toCourse.Participants.Insert(args.NewIndex, student);
+            }
+        }
+    }
+
+    private async Task SaveChanges()
+    {
+        if (Assignment is not null)
+        {
+            foreach (var student in UnassignedStudents)
+            {
+                int i = Assignment.Students.FindIndex(s => s.Id == student.Id);
+                if (i >= 0)
+                {
+                    var s = Assignment.Students[i];
+                    Assignment.Students[i] = (s.Id, null, s.Preferences);
+                }
+            }
+
+            foreach (var course in Courses)
+            {
+                foreach (var student in course.Participants)
+                {
+                    int i = Assignment.Students.FindIndex(s => s.Id == student.Id);
+                    if (i >= 0)
+                    {
+                        var s = Assignment.Students[i];
+                        Assignment.Students[i] = (s.Id, course.Id, s.Preferences);
+                    }
+                }
+            }
+
+            await OnAssignmentDatasetSaved.InvokeAsync(Assignment);
+        }
+    }
+}

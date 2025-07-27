@@ -1,0 +1,108 @@
+﻿@page "/assignments/create"
+@rendermode InteractiveServer
+
+<div class="mt-3 mb-2">
+    <h4>Zuteilungen erstellen und editieren</h4>
+    <p></p>
+</div>
+
+<AssignmentCreator OnAssignmentDatasetCreated="HandleAssignmentDatasetResult"></AssignmentCreator>
+
+<hr />
+
+<AssignmentEditor Assignment="@AssignmentDataset" OnAssignmentDatasetSaved="HandleAssignmentChange"></AssignmentEditor>
+
+<hr />
+
+<h5 class="mt-4 mb-2 fw-bold">Metriken</h5>
+
+
+<table class="table table-sm">
+    <thead>
+        <tr class="fw-bold">
+            <td class="text-nowrap">HEUR</td>
+            <td class="text-nowrap">ALGO</td>
+            <td class="text-nowrap">TYPE</td>
+            <td class="text-nowrap">DATA</td>
+            <td class="text-nowrap">Σ NZ</td>
+            <td class="text-nowrap">Ø PR</td>
+            <td class="text-nowrap">Σ EW</td>
+            <td class="text-nowrap">% EW</td>
+            <td class="text-nowrap">Σ LW</td>
+            <td class="text-nowrap">% LW</td>
+            <td class="text-nowrap">Σ NEID</td>
+            <td class="text-nowrap">% NEID</td>
+            <td class="text-nowrap">Ø NEST</td>
+            <td class="text-nowrap">Σ TAUSCH</td>
+            <td class="text-nowrap">% TAUSCH</td>
+        </tr>
+    </thead>
+    <tbody>
+        @if (MetricsDataset is not null)
+        {
+            <tr>
+                <td>@MetricsDataset.HeuristicName</td>
+                <td>@MetricsDataset.AlgorithmName</td>
+                <td>@MetricsDataset.InputDatasetType</td>
+                <td>@MetricsDataset.InputDatasetName</td>
+                <td>@MetricsDataset.UnassignedStudentsCount</td>
+                <td>@($"{MetricsDataset.NormalizedAveragePreferenceRank:F2}")</td>
+                <td>@MetricsDataset.FirstChoiceCount</td>
+                <td>@($"{MetricsDataset.FirstChoicePercentage:F2}")</td>
+                <td>@MetricsDataset.LastChoiceCount</td>
+                <td>@($"{MetricsDataset.LastChoicePercentage:F2}")</td>
+                <td>@MetricsDataset.JealousStudentsCount</td>
+                <td>@($"{MetricsDataset.JealousPercentage:F2}")</td>
+                <td>@($"{MetricsDataset.NormalizedJealousy:F2}")</td>
+                <td>@MetricsDataset.TwoWaySwapPairsCount</td>
+                <td>@($"{MetricsDataset.TwoWaySwapPairsPercentage:F2}")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+<hr />
+<div class="my-3 p-2 bg-light">
+    <h6 class="fw-bold">Legende</h6>
+    <table class="table table-sm table-borderless table-light">
+        <thead class="fw-bold">
+            <tr>
+                <td>Kürzel</td>
+                <td>Bedeutung</td>
+                <td>Deutung</td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td class="text-nowrap">HEUR</td><td>Bezeichnung der Heuristik</td><td>STD = Keine Heuristik, OMX = Optimized Minimum X</td></tr>
+            <tr><td class="text-nowrap">ALGO</td><td>Bezeichnung des Algorithmus</td><td>BOS = Boston, DA = Deferred Acceptance, RSD = Random Serial Dictatorship, UNK = Unknown</td></tr>
+            <tr><td class="text-nowrap">TYPE</td><td>Eingabedatensatztyp</td><td>HIST = Historisch, BEST = BestCase, WRST = WorstCase, RAND = Random</td></tr>
+            <tr><td class="text-nowrap">DATA</td><td>Bezeichnung der Eingabedaten</td><td>Kürzel für einen bestimmten Eingabedatensatz</td></tr>
+            <tr><td class="text-nowrap">Ø PR</td><td>Durchschnittlicher Präferenzrang, normiert</td><td>0 = Alle haben Erstwahl erhalten, 1 = Alle haben Letztwahl erhalten</td></tr>
+            <tr><td class="text-nowrap">Σ EW</td><td>Summe der Schüler mit Erstwahlerhalt</td><td>0 = Niemand hat Erstwahl erhalten</td></tr>
+            <tr><td class="text-nowrap">% EW</td><td>Anteil der Schüler mit Erstwahlerhalt</td><td>100 = Alle haben Erstwahl erhalten, 0 = Niemand hat Erstwahl erhalten</td></tr>
+            <tr><td class="text-nowrap">Σ LW</td><td>Summe der Schüler mit Letztwahlerhalt</td><td>0 = Niemand hat Letztwahl erhalten</td></tr>
+            <tr><td class="text-nowrap">% LW</td><td>Anteil der Schüler mit Letztwahlerhalt</td><td>100 = Alle haben Letztwahl erhalten, 0 = Niemand hat Letztwahl erhalten</td></tr>
+            <tr><td class="text-nowrap">Σ NEID</td><td>Summe der Schüler, die Neid hegen</td><td>0 = Niemand ist neidisch</td></tr>
+            <tr><td class="text-nowrap">% NEID</td><td>Anteil der Schüler, die Neid hegen</td><td>100 = Alle sind neidisch, 0 = Niemand ist neidisch</td></tr>
+            <tr><td class="text-nowrap">Ø NEST</td><td>Durchschnittliche Neidstärke, normiert</td><td>0 = Es wird nicht geneidet, 1 = Beneidete Schüler sind immer maximal bessergestellt</td></tr>
+            <tr><td class="text-nowrap">Σ TAUSCH</td><td>Summe der Schülerpaare, die von einem Tausch der Kurse profitieren würden</td><td>0 = Niemand würde tauschen</td></tr>
+            <tr><td class="text-nowrap">% TAUSCH</td><td>Anteil der Schülerpaare, die von einem Tausch der Kurse profitieren würden</td><td>100 = Alle würden tauschen, 0 = Niemand würde tauschen</td></tr>
+        </tbody>
+    </table>
+</div>
+
+
+@code {
+    private AssignmentDataset? AssignmentDataset { get; set; }
+    private MetricsDataset? MetricsDataset { get; set; }
+
+    private void HandleAssignmentDatasetResult(AssignmentDataset result)
+    {
+        AssignmentDataset = result;
+    }
+
+    private void HandleAssignmentChange(AssignmentDataset result)
+    {
+        // Nur nach manuellem Speichern im Editor, wenn Assignment vorhanden
+        MetricsDataset = new MetricsDataset(result);
+    }
+}

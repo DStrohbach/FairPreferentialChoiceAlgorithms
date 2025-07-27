@@ -1,0 +1,65 @@
+﻿@using BlazorBootstrap
+@using FairPreferentialChoiceAlgorithms.Models.Datasets
+@rendermode InteractiveServer
+
+@if(Datasets is null)
+{
+    <p>Keine Einträge.</p>
+} else
+{
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            @($"Aggregierte Werte der Heuristik {Name}")
+        </div>
+        <div class="card-body">
+            <Grid TItem="MetricsDataset"
+                  Class="table table-sm font-monospace"
+                  Data="Datasets"
+                  EmptyText="Keine Daten gefunden"
+                  HeaderRowCssClass="border-bottom-0"
+                  Responsive="true"
+                  AllowSorting="true"
+                  AllowSummary="true">
+
+                <GridColumns>
+                    <GridColumn TItem="MetricsDataset" HeaderText="HEUR" PropertyName="HeuristicName" SortKeySelector="@(item => item.HeuristicName)" FilterTextboxWidth="50">
+                        @context.HeuristicName
+                    </GridColumn>
+
+                    <GridColumn TItem="MetricsDataset" HeaderText="ALGO" PropertyName="AlgorithmName" SortKeySelector="@(item => item.AlgorithmName)">
+                        @context.AlgorithmName
+                    </GridColumn>
+
+                    <GridColumn TItem="MetricsDataset" HeaderText="Ø PR" PropertyName="NormalizedAveragePreferenceRank" SortKeySelector="@(item => item.NormalizedAveragePreferenceRank)" SummaryType="GridSummaryColumnType.Average" SummaryValuePrefix="Ø " SummaryValueDisplayFormat="F4">
+                        @context.NormalizedAveragePreferenceRank.ToString("F4")
+                    </GridColumn>
+
+                    <GridColumn TItem="MetricsDataset" HeaderText="% EW" PropertyName="FirstChoicePercentage" SortKeySelector="@(item => item.FirstChoicePercentage)" SummaryType="GridSummaryColumnType.Average" SummaryValuePrefix="Ø " SummaryValueDisplayFormat="F4">
+                        @context.FirstChoicePercentage.ToString("F2")
+                    </GridColumn>
+
+                    <GridColumn TItem="MetricsDataset" HeaderText="% LW" PropertyName="LastChoicePercentage" SortKeySelector="@(item => item.LastChoicePercentage)" SummaryType="GridSummaryColumnType.Average" SummaryValuePrefix="Ø " SummaryValueDisplayFormat="F4">
+                        @context.LastChoicePercentage.ToString("F2")
+                    </GridColumn>
+
+                    <GridColumn TItem="MetricsDataset" HeaderText="Σ TAUSCH" PropertyName="TwoWaySwapPairsCount" SortKeySelector="@(item => item.TwoWaySwapPairsCount)" SummaryType="GridSummaryColumnType.Sum" SummaryValuePrefix="Σ ">
+                        @context.TwoWaySwapPairsCount
+                    </GridColumn>
+
+                    <GridColumn TItem="MetricsDataset" HeaderText="% TAUSCH" PropertyName="TwoWaySwapPairsPercentage" SortKeySelector="@(item => item.TwoWaySwapPairsPercentage)" SummaryType="GridSummaryColumnType.Average" SummaryValuePrefix="Ø " SummaryValueDisplayFormat="F4">
+                        @context.TwoWaySwapPairsPercentage.ToString("F2") %
+                    </GridColumn>
+                </GridColumns>
+            </Grid>
+        </div>
+    </div>
+}
+
+
+@code {
+    [Parameter]
+    public String Name { get; set; }
+
+    [Parameter]
+    public List<MetricsDataset> Datasets { get; set; }
+}

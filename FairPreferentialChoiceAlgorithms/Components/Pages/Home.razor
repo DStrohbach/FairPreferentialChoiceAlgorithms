@@ -1,0 +1,140 @@
+﻿@page "/"
+@using FairPreferentialChoiceAlgorithms.Models.Datasets
+@using BlazorBootstrap
+@rendermode InteractiveServer
+
+<PageTitle>Übersicht</PageTitle>
+
+<style>
+    tfoot tr:last-child {
+        font-weight: bolder;
+    }
+</style>
+
+<div class="mt-3 mb-2">
+    <h4>Aggregierte Auswertung der Heuristiken und Algorithmen</h4>
+    <p></p>
+</div>
+
+<div class="row g-3">
+    @foreach(var dataset in AllDatasets)
+    {
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between">
+                    <span>@($"Aggregierte Werte der Heuristik {dataset.First().HeuristicName}")</span>
+                    <small>@dataset.Count Datensatzgruppierungen</small>
+                </div>
+                <div class="card-body">
+                    <Grid TItem="MetricsDataset"
+                          Class="table table-sm font-monospace"
+                          Data="dataset"
+                          EmptyText="Keine Daten gefunden"
+                          HeaderRowCssClass="border-bottom-0"
+                          Responsive="true"
+                          AllowSorting="true"
+                          AllowSummary="true">
+
+                        <GridColumns>
+                            <GridColumn TItem="MetricsDataset" HeaderText="DATA" PropertyName="MetricsName" Sortable="false">
+                                @context.MetricsName
+                            </GridColumn>
+
+                            <GridColumn TItem="MetricsDataset" HeaderText="ALGO" PropertyName="AlgorithmName" SortKeySelector="@(item => item.AlgorithmName)">
+                                @context.AlgorithmName
+                            </GridColumn>
+
+                            <GridColumn TItem="MetricsDataset" HeaderText="Ø PR" PropertyName="NormalizedAveragePreferenceRank" SortKeySelector="@(item => item.NormalizedAveragePreferenceRank)" SummaryType="GridSummaryColumnType.Average" SummaryValuePrefix="Ø " SummaryValueDisplayFormat="F4">
+                                @context.NormalizedAveragePreferenceRank.ToString("F3")
+                            </GridColumn>
+
+                            <GridColumn TItem="MetricsDataset" HeaderText="Σ EW" PropertyName="FirstChoiceCount" SortKeySelector="@(item => item.FirstChoiceCount)" SummaryType="GridSummaryColumnType.Average" SummaryValuePrefix="Ø " SummaryValueDisplayFormat="F3">
+                                @context.FirstChoiceCount
+                            </GridColumn>
+
+                            <GridColumn TItem="MetricsDataset" HeaderText="% EW" PropertyName="FirstChoicePercentage" SortKeySelector="@(item => item.FirstChoicePercentage)" SummaryType="GridSummaryColumnType.Average" SummaryValuePrefix="Ø " SummaryValueDisplayFormat="F3">
+                                @context.FirstChoicePercentage.ToString("F3") %
+                            </GridColumn>
+
+                            <GridColumn TItem="MetricsDataset" HeaderText="Σ LW" PropertyName="LastChoiceCount" SortKeySelector="@(item => item.LastChoiceCount)" SummaryType="GridSummaryColumnType.Average" SummaryValuePrefix="Ø " SummaryValueDisplayFormat="F3">
+                                @context.LastChoiceCount
+                            </GridColumn>
+
+                            <GridColumn TItem="MetricsDataset" HeaderText="% LW" PropertyName="LastChoicePercentage" SortKeySelector="@(item => item.LastChoicePercentage)" SummaryType="GridSummaryColumnType.Average" SummaryValuePrefix="Ø " SummaryValueDisplayFormat="F3">
+                                @context.LastChoicePercentage.ToString("F3") %
+                            </GridColumn>
+
+                            <GridColumn TItem="MetricsDataset" HeaderText="Σ NEID" PropertyName="JealousStudentsCount" SortKeySelector="@(item => item.JealousStudentsCount)" SummaryType="GridSummaryColumnType.Average" SummaryValuePrefix="Ø " SummaryValueDisplayFormat="F3">
+                                @context.JealousStudentsCount
+                            </GridColumn>
+
+                            <GridColumn TItem="MetricsDataset" HeaderText="% NEID" PropertyName="JealousPercentage" SortKeySelector="@(item => item.JealousPercentage)" SummaryType="GridSummaryColumnType.Average" SummaryValuePrefix="Ø " SummaryValueDisplayFormat="F3">
+                                @context.JealousPercentage.ToString("F3") %
+                            </GridColumn>
+
+                            <GridColumn TItem="MetricsDataset" HeaderText="Ø NEST" PropertyName="NormalizedJealousy" SortKeySelector="@(item => item.NormalizedJealousy)" SummaryType="GridSummaryColumnType.Average" SummaryValuePrefix="Ø " SummaryValueDisplayFormat="F3">
+                                @context.NormalizedJealousy.ToString("F3")
+                            </GridColumn>
+
+                            <GridColumn TItem="MetricsDataset" HeaderText="Σ TAU" PropertyName="TwoWaySwapPairsCount" SortKeySelector="@(item => item.TwoWaySwapPairsCount)" SummaryType="GridSummaryColumnType.Average" SummaryValuePrefix="Ø " SummaryValueDisplayFormat="F3">
+                                @context.TwoWaySwapPairsCount
+                            </GridColumn>
+
+                            <GridColumn TItem="MetricsDataset" HeaderText="% TAU" PropertyName="TwoWaySwapPairsPercentage" SortKeySelector="@(item => item.TwoWaySwapPairsPercentage)" SummaryType="GridSummaryColumnType.Average" SummaryValuePrefix="Ø " SummaryValueDisplayFormat="F3">
+                                @context.TwoWaySwapPairsPercentage.ToString("F3") %
+                            </GridColumn>
+                        </GridColumns>
+                    </Grid>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+<hr />
+<div class="my-3 p-2 bg-light">
+    <h6 class="fw-bold">Legende</h6>
+    <table class="table table-sm table-borderless table-light">
+        <thead class="fw-bold">
+            <tr>
+                <td>Kürzel</td>
+                <td>Bedeutung</td>
+                <td>Deutung</td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td class="text-nowrap">HEUR</td><td>Bezeichnung der Heuristik</td><td>STD = Keine Heuristik, OMX = Optimized Minimum X</td></tr>
+            <tr><td class="text-nowrap">ALGO</td><td>Bezeichnung des Algorithmus</td><td>BOS = Boston, DA = Deferred Acceptance, RSD = Random Serial Dictatorship, UNK = Unknown</td></tr>
+            <tr><td class="text-nowrap">TYPE</td><td>Eingabedatensatztyp</td><td>HIST = Historisch, BEST = BestCase, WRST = WorstCase, RAND = Random</td></tr>
+            <tr><td class="text-nowrap">DATA</td><td>Bezeichnung der Eingabedaten</td><td>Kürzel für einen bestimmten Eingabedatensatz</td></tr>
+            <tr><td class="text-nowrap">Ø PR</td><td>Durchschnittlicher Präferenzrang, normiert</td><td>0 = Alle haben Erstwahl erhalten, 1 = Alle haben Letztwahl erhalten</td></tr>
+            <tr><td class="text-nowrap">Σ EW</td><td>Summe der Schüler mit Erstwahlerhalt</td><td>0 = Niemand hat Erstwahl erhalten</td></tr>
+            <tr><td class="text-nowrap">% EW</td><td>Anteil der Schüler mit Erstwahlerhalt</td><td>100 = Alle haben Erstwahl erhalten, 0 = Niemand hat Erstwahl erhalten</td></tr>
+            <tr><td class="text-nowrap">Σ LW</td><td>Summe der Schüler mit Letztwahlerhalt</td><td>0 = Niemand hat Letztwahl erhalten</td></tr>
+            <tr><td class="text-nowrap">% LW</td><td>Anteil der Schüler mit Letztwahlerhalt</td><td>100 = Alle haben Letztwahl erhalten, 0 = Niemand hat Letztwahl erhalten</td></tr>
+            <tr><td class="text-nowrap">Σ NEID</td><td>Summe der Schüler, die Neid hegen</td><td>0 = Niemand ist neidisch</td></tr>
+            <tr><td class="text-nowrap">% NEID</td><td>Anteil der Schüler, die Neid hegen</td><td>100 = Alle sind neidisch, 0 = Niemand ist neidisch</td></tr>
+            <tr><td class="text-nowrap">Ø NEST</td><td>Durchschnittliche Neidstärke, normiert</td><td>0 = Es wird nicht geneidet, 1 = Beneidete Schüler sind immer maximal bessergestellt</td></tr>
+            <tr><td class="text-nowrap">Σ TAUSCH</td><td>Summe der Schülerpaare, die von einem Tausch der Kurse profitieren würden</td><td>0 = Niemand würde tauschen</td></tr>
+            <tr><td class="text-nowrap">% TAUSCH</td><td>Anteil der Schülerpaare, die von einem Tausch der Kurse profitieren würden</td><td>100 = Alle würden tauschen, 0 = Niemand würde tauschen</td></tr>
+        </tbody>
+    </table>
+</div>
+@code {
+
+    public List<List<MetricsDataset>> AllDatasets = new List<List<MetricsDataset>>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Daten laden und korrekt zuweisen:
+        foreach (var heuristic in AssignmentService.heuristics)
+        {
+            List<MetricsDataset> tempSet = new();
+            foreach (var algorithm in AssignmentService.algorithms)
+            {
+                //Metriken dieser Konstellation finden und zusammenführen
+                tempSet.Add(new MetricsDataset(heuristic.Name, algorithm.Name, MetricsService.Metrics.Where(d => d.AlgorithmName == algorithm.Name && d.HeuristicName == heuristic.Name).ToList()));
+            }
+            AllDatasets.Add(tempSet);
+        }
+    }
+}

@@ -1,0 +1,39 @@
+﻿@{
+    <div class="mx-1">
+    @if (Stats.Capacity is null)
+    {
+        <span>-</span>
+    }
+    else
+    {
+        if (Stats.Participants > 0)
+        {
+            if (Stats.Participants == Stats.Capacity)
+            {
+                <span class="text-primary fw-bold">@($"{Stats.Participants:D2}") / @($"{Stats.Capacity:D2}")</span>
+            } else
+            {
+                <span class="text-primary">@($"{Stats.Participants:D2}") / @($"{Stats.Capacity:D2}")</span>
+            }
+        } else
+        {
+            <span class="text-muted fw-light">@($"{Stats.Participants:D2}") / @($"{Stats.Capacity:D2}")</span>
+        }
+        if(Stats.Minimum is null)
+        {
+            <small class="text-muted fw-light">&nbsp;-</small>
+        } else
+        {
+            <small class="text-muted fw-light">&nbsp;@Stats.Minimum</small>
+        }
+    }
+    </div>
+}
+
+@code {
+    [Parameter]
+    public (int? Participants, int? Capacity, int? Minimum) Stats { get; set; }
+
+    string value;
+    string css = "";
+}

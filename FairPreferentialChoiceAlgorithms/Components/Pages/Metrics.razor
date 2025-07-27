@@ -1,0 +1,234 @@
+﻿@page "/metrics"
+@rendermode InteractiveServer
+@using BlazorBootstrap
+
+<PageTitle>Alle Metriken im Vergleich</PageTitle>
+
+<style>
+    .card-header {
+        font-size: 14px;
+    }
+
+    .card-body {
+        font-size: 12px;
+        padding: .25rem .25rem;
+    }
+</style>
+
+<div class="mt-3 mb-2">
+    <h4>Alle Metriken im Vergleich</h4>
+    <p></p>
+</div>
+
+@if (OrderedDatasets is null)
+{
+    <p><em>Keine Datensätze geladen.</em></p>
+}
+else
+{
+    <Grid TItem="MetricsDataset"
+          Class="table table-sm table-bordered table-striped font-monospace"
+          Data="OrderedDatasets"
+          EmptyText="Keine Daten gefunden"
+          HeaderRowCssClass="bg-primary text-white border-bottom-0"
+          FiltersRowCssClass="bg-primary text-white bg-opacity-25 border-bottom-0"
+          FiltersTranslationProvider="GridFiltersTranslationProvider"
+          ItemsPerPageText="Datensets pro Seite"
+          PaginationItemsTextFormat="{0} - {1} von {2} Datensets"
+          Responsive="true"
+          AllowSorting="true"
+          AllowSummary="true"
+          AllowFiltering="true"
+          AllowPaging="true"
+          PageSize="20"
+          PageSizeSelectorVisible="true"
+          PageSizeSelectorItems="@(new int[] { 20,50,100,250,500})">
+
+        <GridColumns>
+            <GridColumn TItem="MetricsDataset" HeaderText="HEUR" PropertyName="HeuristicName" SortKeySelector="@(item => item.HeuristicName)" FilterTextboxWidth="50">
+                @context.HeuristicName
+            </GridColumn>
+
+            <GridColumn TItem="MetricsDataset" HeaderText="ALGO" PropertyName="AlgorithmName" SortKeySelector="@(item => item.AlgorithmName)">
+                @context.AlgorithmName
+            </GridColumn>
+
+            <GridColumn TItem="MetricsDataset" HeaderText="TYPE" PropertyName="InputDatasetType" SortKeySelector="@(item => item.InputDatasetType)">
+                @context.InputDatasetType
+            </GridColumn>
+
+            <GridColumn TItem="MetricsDataset" HeaderText="DATA" PropertyName="InputDatasetName" SortKeySelector="@(item => item.InputDatasetName)">
+                @context.InputDatasetName
+            </GridColumn>
+
+            <GridColumn TItem="MetricsDataset" HeaderText="Ø PR" PropertyName="NormalizedAveragePreferenceRank" SortKeySelector="@(item => item.NormalizedAveragePreferenceRank)" SummaryType="GridSummaryColumnType.Average" SummaryValuePrefix="Ø " SummaryValueDisplayFormat="F4">
+                @context.NormalizedAveragePreferenceRank.ToString("F4")
+            </GridColumn>
+
+            <GridColumn TItem="MetricsDataset" HeaderText="Σ EW" PropertyName="FirstChoiceCount" SortKeySelector="@(item => item.FirstChoiceCount)" SummaryType="GridSummaryColumnType.Sum" SummaryValuePrefix="Σ ">
+                @context.FirstChoiceCount
+            </GridColumn>
+
+            <GridColumn TItem="MetricsDataset" HeaderText="% EW" PropertyName="FirstChoicePercentage" SortKeySelector="@(item => item.FirstChoicePercentage)" SummaryType="GridSummaryColumnType.Average" SummaryValuePrefix="Ø " SummaryValueDisplayFormat="F4">
+                @context.FirstChoicePercentage.ToString("F2")
+            </GridColumn>
+
+            <GridColumn TItem="MetricsDataset" HeaderText="Σ LW" PropertyName="LastChoiceCount" SortKeySelector="@(item => item.LastChoiceCount)" SummaryType="GridSummaryColumnType.Sum" SummaryValuePrefix="Σ ">
+                @context.LastChoiceCount
+            </GridColumn>
+
+            <GridColumn TItem="MetricsDataset" HeaderText="% LW" PropertyName="LastChoicePercentage" SortKeySelector="@(item => item.LastChoicePercentage)" SummaryType="GridSummaryColumnType.Average" SummaryValuePrefix="Ø " SummaryValueDisplayFormat="F4">
+                @context.LastChoicePercentage.ToString("F2")
+            </GridColumn>
+
+            <GridColumn TItem="MetricsDataset" HeaderText="Σ NEID" PropertyName="JealousStudentsCount" SortKeySelector="@(item => item.JealousStudentsCount)" SummaryType="GridSummaryColumnType.Sum" SummaryValuePrefix="Σ ">
+                @context.JealousStudentsCount
+            </GridColumn>
+
+            <GridColumn TItem="MetricsDataset" HeaderText="% NEID" PropertyName="JealousPercentage" SortKeySelector="@(item => item.JealousPercentage)" SummaryType="GridSummaryColumnType.Average" SummaryValuePrefix="Ø " SummaryValueDisplayFormat="F4">
+                @context.JealousPercentage.ToString("F2") %
+            </GridColumn>
+
+            <GridColumn TItem="MetricsDataset" HeaderText="Ø NEST" PropertyName="NormalizedJealousy" SortKeySelector="@(item => item.NormalizedJealousy)" SummaryType="GridSummaryColumnType.Average" SummaryValuePrefix="Ø " SummaryValueDisplayFormat="F4">
+                @context.NormalizedJealousy.ToString("F2")
+            </GridColumn>
+
+            <GridColumn TItem="MetricsDataset" HeaderText="Σ TAU" PropertyName="TwoWaySwapPairsCount" SortKeySelector="@(item => item.TwoWaySwapPairsCount)" SummaryType="GridSummaryColumnType.Sum" SummaryValuePrefix="Σ ">
+                @context.TwoWaySwapPairsCount
+            </GridColumn>
+
+            <GridColumn TItem="MetricsDataset" HeaderText="% TAU" PropertyName="TwoWaySwapPairsPercentage" SortKeySelector="@(item => item.TwoWaySwapPairsPercentage)" SummaryType="GridSummaryColumnType.Average" SummaryValuePrefix="Ø " SummaryValueDisplayFormat="F4">
+                @context.TwoWaySwapPairsPercentage.ToString("F2") %
+            </GridColumn>
+        </GridColumns>
+
+        <GridDetailView TItem="MetricsDataset" Context="dataset" Class="w-100 overflow-x-scroll">
+            @{
+                AssignmentDataset assignment = AssignmentService.Assignments.Where(a => a.HeuristicName == dataset.HeuristicName && a.AlgorithmName == dataset.AlgorithmName && a.InputDatasetName == dataset.InputDatasetName).First();
+            }
+            <div class="w-100 overflow-x-scroll text-nowrap">
+                <!-- Unzugewiesene Schüler -->
+                <div class="mx-2 d-inline-block">
+                    <div class="card">
+                        <div class="card-header bg-danger-subtle">Ohne Zuteilung</div>
+                        <div class="card-body">
+                            @{
+                                var students = assignment.GetStudentsByCourseId(null);
+                                if (students.Any())
+                                {
+                                    <ol>
+                                        @foreach (var student in students)
+                                        {
+                                            <li class="small">S_@student.Id: [@string.Join(", ", student.Preferences)]</li>
+                                        }
+                                    </ol>
+                                }
+                                else
+                                {
+                                    <p class="text-center text-mute fst-italic">leer</p>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+                <!-- Zugewiesene Schüler -->
+                @foreach (var course in assignment.Courses)
+                {
+                    <div class="mx-2 d-inline-block">
+                        <div class="card">
+                            <div class="card-header text-center">Kurs-@course.Id</div>
+                            <div class="card-header text-center"><CourseStatsText Stats="@assignment.GetCourseStatByCourseId(course.Id)"></CourseStatsText></div>
+                            <div class="card-body">
+                                @{
+                                    students = assignment.GetStudentsByCourseId(course.Id);
+                                    if (students.Any())
+                                    {
+                                        <ol>
+                                            @foreach (var student in students)
+                                            {
+                                                bool isInPair = dataset.TwoWaySwapPairs.Any(pair => pair.Item1 == student.Id || pair.Item2 == student.Id);
+                                                <li class="@(isInPair ? "bg-primary-subtle" : "")">
+                                                    <span class="fw-bold">@($"S-{student.Id:D2}")</span> : [@string.Join(", ", student.Preferences)] : 
+                                                </li>
+                                            }
+                                        </ol>
+                                    }
+                                    else
+                                    {
+                                        <p class="text-center text-mute fst-italic">leer</p>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </GridDetailView>
+    </Grid>
+}
+<hr />
+<div class="my-3 p-2 bg-light">
+    <h6 class="fw-bold">Legende</h6>
+    <table class="table table-sm table-borderless table-light">
+        <thead class="fw-bold">
+            <tr>
+                <td>Kürzel</td>
+                <td>Bedeutung</td>
+                <td>Deutung</td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td class="text-nowrap">HEUR</td><td>Bezeichnung der Heuristik</td><td>STD = Keine Heuristik, OMX = Optimized Minimum X</td></tr>
+            <tr><td class="text-nowrap">ALGO</td><td>Bezeichnung des Algorithmus</td><td>BOS = Boston, DA = Deferred Acceptance, RSD = Random Serial Dictatorship, UNK = Unknown</td></tr>
+            <tr><td class="text-nowrap">TYPE</td><td>Eingabedatensatztyp</td><td>HIST = Historisch, BEST = BestCase, WRST = WorstCase, RAND = Random</td></tr>
+            <tr><td class="text-nowrap">DATA</td><td>Bezeichnung der Eingabedaten</td><td>Kürzel für einen bestimmten Eingabedatensatz</td></tr>
+            <tr><td class="text-nowrap">Ø PR</td><td>Durchschnittlicher Präferenzrang, normiert</td><td>0 = Alle haben Erstwahl erhalten, 1 = Alle haben Letztwahl erhalten</td></tr>
+            <tr><td class="text-nowrap">Σ EW</td><td>Summe der Schüler mit Erstwahlerhalt</td><td>0 = Niemand hat Erstwahl erhalten</td></tr>
+            <tr><td class="text-nowrap">% EW</td><td>Anteil der Schüler mit Erstwahlerhalt</td><td>100 = Alle haben Erstwahl erhalten, 0 = Niemand hat Erstwahl erhalten</td></tr>
+            <tr><td class="text-nowrap">Σ LW</td><td>Summe der Schüler mit Letztwahlerhalt</td><td>0 = Niemand hat Letztwahl erhalten</td></tr>
+            <tr><td class="text-nowrap">% LW</td><td>Anteil der Schüler mit Letztwahlerhalt</td><td>100 = Alle haben Letztwahl erhalten, 0 = Niemand hat Letztwahl erhalten</td></tr>
+            <tr><td class="text-nowrap">Σ NEID</td><td>Summe der Schüler, die Neid hegen</td><td>0 = Niemand ist neidisch</td></tr>
+            <tr><td class="text-nowrap">% NEID</td><td>Anteil der Schüler, die Neid hegen</td><td>100 = Alle sind neidisch, 0 = Niemand ist neidisch</td></tr>
+            <tr><td class="text-nowrap">Ø NEST</td><td>Durchschnittliche Neidstärke, normiert</td><td>0 = Es wird nicht geneidet, 1 = Beneidete Schüler sind immer maximal bessergestellt</td></tr>
+            <tr><td class="text-nowrap">Σ TAU</td><td>Summe der Schülerpaare, die von einem Tausch der Kurse profitieren würden</td><td>0 = Niemand würde tauschen</td></tr>
+            <tr><td class="text-nowrap">% TAU</td><td>Anteil der Schülerpaare, die von einem Tausch der Kurse profitieren würden</td><td>100 = Alle würden tauschen, 0 = Niemand würde tauschen</td></tr>
+        </tbody>
+    </table>
+</div>
+
+@code {
+
+    public List<MetricsDataset> OrderedDatasets = new List<MetricsDataset>();
+
+    protected override void OnInitialized()
+    {
+        // Daten laden und sortieren:
+        OrderedDatasets = MetricsService.Metrics
+        .OrderBy(m => m.HeuristicName)
+        .ThenBy(m => m.AlgorithmName)
+        .ToList();
+    }
+
+    private async Task<IEnumerable<FilterOperatorInfo>> GridFiltersTranslationProvider()
+    {
+        var filtersTranslation = new List<FilterOperatorInfo>();
+
+        // number/date/boolean
+        filtersTranslation.Add(new("=", "gleich", BlazorBootstrap.FilterOperator.Equals));
+        filtersTranslation.Add(new("!=", "ungleich", BlazorBootstrap.FilterOperator.NotEquals));
+        // number/date
+        filtersTranslation.Add(new("<", "kleiner als", BlazorBootstrap.FilterOperator.LessThan));
+        filtersTranslation.Add(new("<=", "kleiner gleich als", BlazorBootstrap.FilterOperator.LessThanOrEquals));
+        filtersTranslation.Add(new(">", "größer als", BlazorBootstrap.FilterOperator.GreaterThan));
+        filtersTranslation.Add(new(">=", "größer gleich als", BlazorBootstrap.FilterOperator.GreaterThanOrEquals));
+        // string
+        filtersTranslation.Add(new("*a*", "beinhaltet", BlazorBootstrap.FilterOperator.Contains));
+        filtersTranslation.Add(new("!*a*", "beinhaltet nicht", BlazorBootstrap.FilterOperator.DoesNotContain));
+        filtersTranslation.Add(new("a*", "beginnt mit", BlazorBootstrap.FilterOperator.StartsWith));
+        filtersTranslation.Add(new("*a", "endet mit", BlazorBootstrap.FilterOperator.EndsWith));
+        // common
+        filtersTranslation.Add(new("", "Filter zurücksetzen", BlazorBootstrap.FilterOperator.Clear));
+
+        return await Task.FromResult(filtersTranslation);
+    }
+}
