@@ -4,7 +4,7 @@ using System;
 namespace FairPreferentialChoiceAlgorithms.Services.Algorithms
 {
     /// <summary>
-    /// Deferred Acceptance: strategiesicher
+    /// Deferred Acceptance: in dieser Variante nicht strategiesicher
     /// <para>Siehe <a href="https://en.wikipedia.org/wiki/Gale%E2%80%93Shapley_algorithm">DA auf Wikipedia</a></para>
     /// <para>Siehe <a href="https://people.duke.edu/~aa88/articles/BostonAERPP.pdf">Paper mit Abläufen von Algorithmen</a></para>
     /// </summary>
@@ -21,7 +21,7 @@ namespace FairPreferentialChoiceAlgorithms.Services.Algorithms
         public void Run(List<Course> courses, List<Student> students)
         {
             // 1. Kurspräferenzen generieren (auf Basis der Schülerpräferenzen)
-            Dictionary<int, List<int>> coursePreferences = GeneriereCoursePreferences(students, courses);
+            Dictionary<int, List<int>> coursePreferences = GenerateCoursePreferences(students, courses);
 
             // Abbruchbedingung: Kein Schüler bewegt sich mehr zwischen Kurs und Schülerliste
             bool changed;
@@ -31,6 +31,7 @@ namespace FairPreferentialChoiceAlgorithms.Services.Algorithms
                 changed = false;
 
                 // 1. Alle unzugewiesenen Schüler bewerben sich bei ihrer aktuellen Präferenz (Kopie der Liste für sichere Iteration)
+                // (Kopie der Liste für sichere Iteration)
                 foreach (var student in students.ToList())
                 {
                     // Failsafe: Hat der Schüler keine Präferenzen oder das Ende seiner Präferenzen erreicht?
@@ -92,13 +93,13 @@ namespace FairPreferentialChoiceAlgorithms.Services.Algorithms
             }
         }
 
-        public Dictionary<int, List<int>> GeneriereCoursePreferences(List<Student> students, List<Course> courses)
+        public Dictionary<int, List<int>> GenerateCoursePreferences(List<Student> students, List<Course> courses)
         {
             var coursePreferences = new Dictionary<int, List<int>>();
 
             foreach (var course in courses)
             {
-                // Studenten auswählen, die diesen course in ihrer Liste haben + Rang ermitteln
+                // Schüler auswählen, die diesen Kurs in ihrer Liste haben und Rang ermitteln
                 var rankedStudents = students
                     .Where(s => s.Preferences.Contains(course.Id))
                     .Select(s => new
@@ -107,7 +108,7 @@ namespace FairPreferentialChoiceAlgorithms.Services.Algorithms
                         Rang = s.Preferences.ToList().IndexOf(course.Id)
                     });
 
-                // Nach Rang gruppieren, sortieren, dann shuffeln, dann flach zusammenfügen
+                // Nach Präferenzrang gruppieren, sortieren, dann pro Rang shuffeln, dann flach zusammenfügen
                 var orderedStudents = rankedStudents
                     .GroupBy(x => x.Rang)
                     .OrderBy(g => g.Key)
@@ -118,7 +119,6 @@ namespace FairPreferentialChoiceAlgorithms.Services.Algorithms
                 // In das Dictionary eintragen
                 coursePreferences[course.Id] = orderedStudents;
             }
-
             return coursePreferences;
         }
     }

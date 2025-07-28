@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace FairPreferentialChoiceAlgorithms.Models
+﻿namespace FairPreferentialChoiceAlgorithms.Models
 {
     public class Course
     {
@@ -9,8 +7,7 @@ namespace FairPreferentialChoiceAlgorithms.Models
         public int? Capacity { get; set; }
         public int? MinimumStudents { get; set; }
         public List<Student> Participants { get; set; } = new List<Student>();
-        public List<Student> Applicants { get; set; } = new List<Student>(); // Für Boston, DA
-        public List<int> RankedStudentIds { get; set; } = new(); // Für DA
+        public List<Student> Applicants { get; set; } = new List<Student>();
 
         public Course(int id, int? capacity, int? minimumStudents)
         {
@@ -20,3 +17,4 @@ namespace FairPreferentialChoiceAlgorithms.Models
         }
     }
 }
+

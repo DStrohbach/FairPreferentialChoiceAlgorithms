@@ -10,6 +10,6 @@
             Id = id;
             Preferences = preferences;
         }
-
     }
 }
+
