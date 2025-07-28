@@ -26,7 +26,7 @@
 
         <div class="col">
             <label>Datensatz-Typ:</label>
-            <select class="form-control" @bind="selectedDatasetType">
+            <select class="form-control" @onchange="OnDatasetTypeChanged">
                 @foreach (var type in _allDatasets.Select(d => d.Type).Distinct())
                 {
                     <option value="@type">@type</option>
@@ -100,10 +100,17 @@
         selectedDatasetName = _allDatasets.FirstOrDefault(d => d.Type == selectedDatasetType)?.Name;
     }
 
-    private bool CanStart =>
-        SelectedHeuristic != null &&
-        SelectedAlgorithm != null &&
-        selectedInputDataset != null;
+    private bool CanStart => SelectedHeuristic != null && SelectedAlgorithm != null && selectedInputDataset != null;
+
+    private async Task OnDatasetTypeChanged(ChangeEventArgs e)
+    {
+        selectedDatasetType = e.Value?.ToString();
+
+        selectedDatasetName = _allDatasets
+            .FirstOrDefault(d => d.Type == selectedDatasetType)?.Name;
+
+        await InvokeAsync(StateHasChanged);
+    }
 
     private async Task StartAssignment()
     {
