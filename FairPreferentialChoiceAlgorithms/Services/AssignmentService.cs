@@ -70,11 +70,11 @@ namespace FairPreferentialChoiceAlgorithms.Services
                 DeletedCoursesCount = 1,
                 Courses = new List<(int Id, int? Capacity, int? Minimum)>
                 {
-                    (0, 30, 15),
-                    (1, 30, 15),
-                    (2, 30, 15),
-                    (3, 30, 15),
-                    (4, 30, 15)
+                    (0, 26, 15),
+                    (1, 26, 15),
+                    (2, 26, 15),
+                    (3, 26, 15),
+                    (4, 26, 15)
                 },
                 Students = new List<(int Id, int? AssignedCourse, List<int> Preferences)>
                 {
