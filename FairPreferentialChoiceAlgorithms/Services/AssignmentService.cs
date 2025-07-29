@@ -33,9 +33,9 @@ namespace FairPreferentialChoiceAlgorithms.Services
             // Liste aller Algorithmen, die verwendet werden sollen
             algorithms = new List<IAssignmentAlgorithm>
             {
-                new AlgorithmRSD(_random),
                 new AlgorithmBOS(_random),
-                new AlgorithmDAC(_random)
+                new AlgorithmDAC(_random),
+                new AlgorithmRSD(_random)
                 //new AlgorithmTTC(_random)
             };
 

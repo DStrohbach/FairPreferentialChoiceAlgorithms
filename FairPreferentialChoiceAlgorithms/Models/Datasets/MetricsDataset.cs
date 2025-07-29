@@ -64,13 +64,13 @@ namespace FairPreferentialChoiceAlgorithms.Models.Datasets
         /// TODO: Auf Anzeigeseiten lieber Liste aller Metriken nach Begriffen filtern und Stats zusammenrechnen,<br/>
         /// dann könnte man auch anzeigen, wieviele Datensets man durchgegangen ist!
         /// </summary>
-        public MetricsDataset(string heuristicName, string algorithmName, List<MetricsDataset> metricsDatasets)
+        public MetricsDataset(string heuristicName, string algorithmName, string inputDatasetType, string inputDatasetName, List<MetricsDataset> metricsDatasets)
         {
             MetricsName = $"{metricsDatasets.Count}";
             HeuristicName = heuristicName;
             AlgorithmName = algorithmName;
-            InputDatasetType = "MULT";
-            InputDatasetName = "MULT";
+            InputDatasetType = inputDatasetType;
+            InputDatasetName = inputDatasetName;
             ReducedCoursesCount = metricsDatasets.Sum(d => d.ReducedCoursesCount);
             // Distributive Metriken
             UnassignedStudentsCount = metricsDatasets.Sum(d => d.UnassignedStudentsCount);
